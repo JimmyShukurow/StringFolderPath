@@ -6,6 +6,15 @@
         <q-btn color="orange-4" dense flat icon="folder" />
         <input class="folder-name bg-grey-4" v-model="mainParent.name" />
         <q-btn
+          color="negative"
+          icon="delete"
+          round
+          dense
+          class="q-ml-sm delete-node"
+          @click="deleteNode($event)"
+          style="display: none"
+        />
+        <q-btn
           color="green"
           class="q-ml-xl add-sibling"
           icon="add"
@@ -36,9 +45,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const rawParent = ref();
-const rawChild = ref();
-
 const mainParent = ref({
   name: '',
   child: {},
@@ -48,6 +54,9 @@ const addSibling = (event: Event) => {
     const parent = event.currentTarget?.closest('.parent');
 
     const newSibling = parent.cloneNode(true);
+    newSibling.setAttribute('id', 'p1');
+    newSibling.querySelector('.delete-node').removeAttribute('style');
+    newSibling.querySelector('.delete-node').setAttribute('size', '10px');
 
     const addSiblingButtons = newSibling.querySelectorAll('.add-sibling');
 
@@ -61,6 +70,12 @@ const addSibling = (event: Event) => {
       button.addEventListener('click', addChild);
     });
 
+    const deleteButtons = newSibling.querySelectorAll('.delete-node');
+
+    deleteButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', deleteNode);
+    });
+
     parent.parentNode.insertBefore(newSibling, parent.nextSibling);
   }
 };
@@ -69,6 +84,10 @@ const addChild = (event: Event) => {
     const parent = event.currentTarget?.closest('.parent');
 
     const newChild = parent.cloneNode(true);
+    newChild.setAttribute('id', 'ch1');
+    newChild.querySelector('.delete-node').removeAttribute('style');
+    newChild.querySelector('.delete-node').setAttribute('size', '10px');
+
     const addSiblingButtons = newChild.querySelectorAll('.add-sibling');
 
     addSiblingButtons.forEach((button: HTMLButtonElement) => {
@@ -80,10 +99,27 @@ const addChild = (event: Event) => {
       button.addEventListener('click', addChild);
     });
 
+    const deleteButtons = newChild.querySelectorAll('.delete-node');
+
+    deleteButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', deleteNode);
+    });
+
     const childContainer = parent.querySelector('.child');
     if (childContainer) {
       childContainer.appendChild(newChild);
     }
+  }
+};
+const deleteNode = (event: Event) => {
+  console.log('deleting ...');
+  if (event.currentTarget?.closest('.parent')) {
+    console.log('here');
+
+    const parent = event.currentTarget?.closest('.parent');
+    const parentNode = parent?.parentNode;
+
+    parentNode.removeChild(parent);
   }
 };
 </script>
