@@ -19,7 +19,7 @@
           icon="add"
           round
           size="10px"
-          @click="addChild()"
+          @click="addChild($event)"
         />
         <div class="child row"></div>
       </div>
@@ -36,7 +36,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const name = ref('');
+const rawParent = ref();
+const rawChild = ref();
 
 const mainParent = ref({
   name: '',
@@ -47,18 +48,42 @@ const addSibling = (event: Event) => {
     const parent = event.currentTarget?.closest('.parent');
 
     const newSibling = parent.cloneNode(true);
-    console.log(newSibling);
+
     const addSiblingButtons = newSibling.querySelectorAll('.add-sibling');
-    console.log(addSiblingButtons);
 
     addSiblingButtons.forEach((button: HTMLButtonElement) => {
       button.addEventListener('click', addSibling);
     });
 
+    const addChildButtons = newSibling.querySelectorAll('.add-child');
+
+    addChildButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', addChild);
+    });
+
     parent.parentNode.insertBefore(newSibling, parent.nextSibling);
   }
 };
-const addChild = () => {
-  alert('child');
+const addChild = (event: Event) => {
+  if (event.currentTarget?.closest('.parent')) {
+    const parent = event.currentTarget?.closest('.parent');
+
+    const newChild = parent.cloneNode(true);
+    const addSiblingButtons = newChild.querySelectorAll('.add-sibling');
+
+    addSiblingButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', addSibling);
+    });
+    const addChildButtons = newChild.querySelectorAll('.add-child');
+
+    addChildButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', addChild);
+    });
+
+    const childContainer = parent.querySelector('.child');
+    if (childContainer) {
+      childContainer.appendChild(newChild);
+    }
+  }
 };
 </script>
