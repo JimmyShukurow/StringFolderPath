@@ -1,0 +1,39 @@
+// app global css in SCSS form
+
+.view-side,
+.string-side {
+  width: 600px;
+  height: 500px;
+  border: 3px solid blue;
+  position: relative;
+}
+.string-side {
+  padding: 20px;
+}
+
+.folder-name {
+  width: 100px;
+  border: 2px solid black;
+  border-radius: 5px;
+}
+.folder-name:focus {
+  background-color: aliceblue;
+}
+.parent {
+  margin-top: 10px;
+  width: 100%;
+}
+.line-hover {
+  background-color: red;
+}
+.child {
+  margin-left: 25px;
+}
+.add-child {
+  position: absolute;
+  right: 100px;
+}
+.add-sibling {
+  position: absolute;
+  right: 50px;
+}
