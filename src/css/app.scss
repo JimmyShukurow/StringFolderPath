@@ -10,6 +10,11 @@
 }
 .string-side {
   padding: 20px;
+  display: flex;
+}
+.no-margin-padding {
+  margin: 0;
+  padding: 0;
 }
 
 .folder-name {
@@ -37,4 +42,7 @@
 .add-sibling {
   position: absolute;
   right: 50px;
+}
+.not-visible {
+  display: none;
 }

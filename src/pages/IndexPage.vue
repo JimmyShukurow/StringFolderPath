@@ -3,7 +3,14 @@
     <div class="view-side bg-grey-4">
       <div class="parent">
         <q-btn flat dense icon="keyboard_arrow_right" class="folder-arrow" />
-        <q-btn color="orange-4" dense flat icon="folder" />
+        <q-btn
+          color="orange-4"
+          dense
+          flat
+          icon="folder"
+          class="file-or-folder"
+          @click="toggleIcon($event)"
+        />
         <input class="folder-name bg-grey-4" v-model="mainParent.name" />
         <q-btn
           color="negative"
@@ -33,11 +40,15 @@
         <div class="child row"></div>
       </div>
     </div>
+    <q-btn @click="toString">convert</q-btn>
     <div class="string-side bg-grey-4">
-      &mdash; &mdash; &mdash; &nbsp;{{ mainParent.name }}/
-      <br />&#9589;&nbsp;&nbsp;&nbsp;&nbsp; &#9589; &mdash; &mdash; &mdash;
-      &nbsp; {{ mainParent.name }} / <br />
-      &mdash; &mdash; &mdash; &nbsp; {{ mainParent.name }} /
+      <div class="string-parent">
+        &mdash; &nbsp;test/
+        <div class="string-child">
+          &nbsp;&nbsp;&nbsp;&nbsp; &#9589; &mdash; &nbsp; test/
+        </div>
+        &mdash; &nbsp;test/
+      </div>
     </div>
   </q-page>
 </template>
@@ -49,6 +60,12 @@ const mainParent = ref({
   name: '',
   child: {},
 });
+// const result = ref(`&mdash; &nbsp;test/
+//       <br />&nbsp;&nbsp;&nbsp;&nbsp; &#9589; &mdash;
+//       &nbsp; test/ <br />&nbsp;&nbsp;&nbsp;&nbsp;
+//       &#9589; &mdash; &nbsp; test/ <br />
+//       &mdash; &nbsp; test/`);
+const result = ref('');
 const addSibling = (event: Event) => {
   if (event.currentTarget?.closest('.parent')) {
     const parent = event.currentTarget?.closest('.parent');
@@ -68,7 +85,12 @@ const addSibling = (event: Event) => {
     deleteButtons.forEach((button: HTMLButtonElement) => {
       button.addEventListener('click', deleteNode);
     });
+    const iconButtons = newSibling.querySelectorAll('.file-or-folder');
+    iconButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', toggleIcon);
+    });
     parent.parentNode.insertBefore(newSibling, parent.nextSibling);
+    toString();
   }
 };
 const addChild = (event: Event) => {
@@ -91,10 +113,15 @@ const addChild = (event: Event) => {
     deleteButtons.forEach((button: HTMLButtonElement) => {
       button.addEventListener('click', deleteNode);
     });
+    const iconButtons = newChild.querySelectorAll('.file-or-folder');
+    iconButtons.forEach((button: HTMLButtonElement) => {
+      button.addEventListener('click', toggleIcon);
+    });
     const childContainer = parent.querySelector('.child');
     if (childContainer) {
       childContainer.appendChild(newChild);
     }
+    toString();
   }
 };
 const deleteNode = (event: Event) => {
@@ -104,11 +131,82 @@ const deleteNode = (event: Event) => {
     const parentNode = parent?.parentNode;
     parentNode.removeChild(parent);
     var check = grandparentNode.querySelector('.child');
-    console.log(check);
     if (check.querySelectorAll('.parent').length == 0)
       grandparentNode
         .querySelector('.folder-arrow')
         .classList.remove('rotate-90');
   }
+  toString();
+};
+
+const toString = () => {
+  var parentElement = document.querySelector('.view-side');
+  var elements = parentElement?.querySelectorAll(':scope > .parent');
+  toStringChild(elements);
+  result.value = '';
+};
+const toStringChild = (elements, indent = '') => {
+  elements.forEach((element, idx, array) => {
+    const icon = element.querySelector('.file-or-folder');
+    const iconValue = icon?.querySelector('.q-icon');
+    const fileOrFolder = iconValue?.innerHTML;
+    const child = element.querySelector('.child');
+
+    result.value += `${indent}&mdash; &nbsp; ${
+      element.querySelector('input')?.value
+    } `;
+    if (fileOrFolder === 'folder') {
+      result.value += '/';
+    }
+    result.value += '<br />';
+
+    if (child && child.querySelectorAll(':scope > .parent').length > 0) {
+      const lastIndex = indent.lastIndexOf('&#9589;');
+      if (
+        elements.length > 1 &&
+        idx !== array.length - 1 &&
+        child.querySelectorAll(':scope > .parent').length > 1
+      )
+        result.value += '&nbsp;&nbsp;&nbsp;&nbsp;&#9589;';
+      var modifiedIndent;
+      if (child.querySelectorAll(':scope > .parent').length == 1) {
+        modifiedIndent =
+          indent.slice(0, lastIndex).replaceAll('&#9589;', '') +
+          '&nbsp;&nbsp;&nbsp;&nbsp;&#9589;';
+      } else {
+        modifiedIndent = indent + '&nbsp;&nbsp;&nbsp;&nbsp;&#9589;';
+      }
+      toStringChild(child.querySelectorAll(':scope > .parent'), modifiedIndent);
+    }
+  });
+
+  var stringView = document.querySelector('.string-side');
+
+  if (stringView) {
+    stringView.innerHTML = result.value;
+  }
+};
+const toggleIcon = (event: Event) => {
+  if (event.currentTarget?.closest('.parent')) {
+    const parent = event.currentTarget?.closest('.parent');
+    var icon = parent.querySelector('.file-or-folder');
+    var addChildButton = parent.querySelector('.add-child');
+
+    var iconValue = icon?.querySelector('.q-icon');
+    if (iconValue.innerHTML == 'folder') {
+      iconValue.innerHTML = 'description';
+
+      icon.classList.remove('text-orange-4');
+      icon.classList.add('text-green-4');
+      addChildButton.classList.add('not-visible');
+    } else {
+      iconValue.innerHTML = 'folder';
+
+      icon.classList.remove('text-green-4');
+      icon.classList.add('text-orange-4');
+      addChildButton.classList.remove('not-visible');
+    }
+  }
+  toString();
 };
 </script>
